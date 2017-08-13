@@ -12,11 +12,32 @@ class ViewController: UIViewController {
 
     fileprivate let fadeButton = UIButton()
     fileprivate let moveButton = UIButton()
-    fileprivate var cons = [NSLayoutConstraint]()
+    
+    fileprivate lazy var generalCons: [NSLayoutConstraint] = [
+        self.fadeButton.widthAnchor.constraint(equalToConstant: 200.0),
+        self.fadeButton.heightAnchor.constraint(equalToConstant: 100.0),
+        self.moveButton.widthAnchor.constraint(equalTo: self.fadeButton.widthAnchor),
+        self.moveButton.heightAnchor.constraint(equalTo: self.fadeButton.heightAnchor)
+    ]
+    
+    fileprivate lazy var landscapeCons: [NSLayoutConstraint] = [
+        self.fadeButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor, constant: -150.0),
+        self.fadeButton.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+        self.moveButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor, constant: 150.0),
+        self.moveButton.centerYAnchor.constraint(equalTo: self.view.centerYAnchor)
+    ]
+    
+    fileprivate lazy var protraitCons: [NSLayoutConstraint] = [
+        self.fadeButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+        self.fadeButton.centerYAnchor.constraint(equalTo: self.view.centerYAnchor, constant: -80.0),
+        self.moveButton.centerXAnchor.constraint(equalTo: self.fadeButton.centerXAnchor),
+        self.moveButton.centerYAnchor.constraint(equalTo: self.view.centerYAnchor, constant: 80.0)
+    ]
 
     override func viewDidLoad() {
         super.viewDidLoad()
         configureButtons()
+        NSLayoutConstraint.activate(generalCons)
     }
     
     fileprivate func configureButtons() {
@@ -42,7 +63,7 @@ class ViewController: UIViewController {
     @objc fileprivate func fade() {
         UIView.animate(withDuration: 0.6, delay: 0.0, options: [.autoreverse], animations: {
             self.fadeButton.alpha = 0.0
-        }) { (isFinished) in
+        }) { isFinished in
             if isFinished {
                 self.fadeButton.alpha = 1.0
             }
@@ -52,7 +73,7 @@ class ViewController: UIViewController {
     @objc fileprivate func move() {
         UIView.animate(withDuration: 0.6, delay: 0.0, options: [.autoreverse], animations: {
             self.moveButton.frame.origin.y += 100.0
-        }) { (isFinished) in
+        }) { isFinished in
             if isFinished {
                 self.moveButton.frame.origin.y -= 100.0
             }
@@ -60,35 +81,16 @@ class ViewController: UIViewController {
     }
     
     fileprivate func configureConstraints() {
-        let wfCon = fadeButton.widthAnchor.constraint(equalToConstant: 200.0)
-        let hfCon = fadeButton.heightAnchor.constraint(equalToConstant: 100.0)
-        
-        let wmCon = NSLayoutConstraint(item: moveButton, attribute: .width, relatedBy: .equal, toItem: fadeButton, attribute: .width, multiplier: 1.0, constant: 0.0)
-        let hmCon = NSLayoutConstraint(item: moveButton, attribute: .height, relatedBy: .equal, toItem: fadeButton, attribute: .height, multiplier: 1.0, constant: 0.0)
-        
-        if UIDevice.current.orientation.isPortrait || !UIDevice.current.orientation.isValidInterfaceOrientation {
-            let xfCon = NSLayoutConstraint(item: fadeButton, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1.0, constant: 0.0)
-            let yfCon = NSLayoutConstraint(item: fadeButton, attribute: .centerY, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 1.0, constant: -80.0)
-            
-            let xmCon = NSLayoutConstraint(item: moveButton, attribute: .centerX, relatedBy: .equal, toItem: fadeButton, attribute: .centerX, multiplier: 1.0, constant: 0.0)
-            let ymCon = NSLayoutConstraint(item: moveButton, attribute: .centerY, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 1.0, constant: 80.0)
-            
-            cons = [xfCon, yfCon, wfCon, hfCon, xmCon, ymCon, wmCon, hmCon]
+        if UIDevice.current.orientation.isLandscape {
+            NSLayoutConstraint.deactivate(protraitCons)
+            NSLayoutConstraint.activate(landscapeCons)
         } else {
-            let xfCon = NSLayoutConstraint(item: fadeButton, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1.0, constant: -150.0)
-            let yfCon = NSLayoutConstraint(item: fadeButton, attribute: .centerY, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 1.0, constant: 0.0)
-            
-            let xmCon = NSLayoutConstraint(item: moveButton, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1.0, constant: 150.0)
-            let ymCon = NSLayoutConstraint(item: moveButton, attribute: .centerY, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 1.0, constant: 0.0)
-            
-            cons = [xfCon, yfCon, wfCon, hfCon, xmCon, ymCon, wmCon, hmCon]
+            NSLayoutConstraint.deactivate(landscapeCons)
+            NSLayoutConstraint.activate(protraitCons)
         }
-        
-        NSLayoutConstraint.activate(cons)
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        NSLayoutConstraint.deactivate(cons)
         configureConstraints()
     }
 
